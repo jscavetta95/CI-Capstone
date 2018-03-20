@@ -23,14 +23,11 @@ public class Driver
 				DriverManager.getConnection("jdbc:mysql://localhost:3306/bitcoin_price_sentiment", 
 											"root", "root");
 		
-		// Testing text analyzer.
-		//testTextAnalysis();
-		
 		// Insert BPI from yesterday into database.
 		double bpi = CoinDeskAPI.getBPIForYesterday();
 		String sql = String.format("INSERT INTO bitcoin_price_index (price_index, date) VALUES (%s, '%s')", bpi, LocalDate.now());
 		
-		//database.createStatement().executeUpdate(sql);
+		database.createStatement().executeUpdate(sql);
 		
 		// Insert sentiments from sample tweets into the database.
 		ArrayList<String> tweetSamples = loadSamples();
@@ -61,6 +58,8 @@ public class Driver
 		samples.add("Winklevii: Bitcoin could be worth 40 times what it is right now");
 		
 		samples.add("Cryptocurrency bull run imminent with bitcoin to hit $50,000 in 2018");
+		
+		samples.add("Testing");
 		
 		return samples;
 	}
