@@ -2,6 +2,11 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="C:/Users/Jscav/OneDrive/My Documents/6. Rowan Year 4 (2017-2018)/Spring 2018/Computing and Informatics Capstone Experience/Project/CI-Capstone/BitcoinTweetAnalyzer/lib/twitter4j-async-4.0.4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jscav/OneDrive/My Documents/6. Rowan Year 4 (2017-2018)/Spring 2018/Computing and Informatics Capstone Experience/Project/CI-Capstone/BitcoinTweetAnalyzer/lib/twitter4j-core-4.0.4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jscav/OneDrive/My Documents/6. Rowan Year 4 (2017-2018)/Spring 2018/Computing and Informatics Capstone Experience/Project/CI-Capstone/BitcoinTweetAnalyzer/lib/twitter4j-examples-4.0.4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jscav/OneDrive/My Documents/6. Rowan Year 4 (2017-2018)/Spring 2018/Computing and Informatics Capstone Experience/Project/CI-Capstone/BitcoinTweetAnalyzer/lib/twitter4j-media-support-4.0.4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jscav/OneDrive/My Documents/6. Rowan Year 4 (2017-2018)/Spring 2018/Computing and Informatics Capstone Experience/Project/CI-Capstone/BitcoinTweetAnalyzer/lib/twitter4j-stream-4.0.4.jar"/>
 	<classpathentry kind="lib" path="C:/Program Files (x86)/MySQL/Connector J 5.1/mysql-connector-java-5.1.45-bin.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

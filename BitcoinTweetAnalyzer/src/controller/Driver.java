@@ -2,65 +2,89 @@ package controller;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 import org.json.JSONException;
 
 import com.aylien.textapi.TextAPIException;
 import com.aylien.textapi.responses.Sentiment;
 
-import coindesk.CoinDeskAPI;
-import controller.TextAnalyzer.SentimentMode;
+import aylienTextAnalyzer.TextAnalyzer;
+import aylienTextAnalyzer.TextAnalyzer.SentimentMode;
 
-public class Driver
-{
-	public static void main(String[] args) throws TextAPIException, JSONException, IOException, SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException
-	{		
-		Connection database = 
-				DriverManager.getConnection("jdbc:mysql://localhost:3306/bitcoin_price_sentiment", 
-											"root", "root");
+import coindesk.CoinDeskAPI;
+
+import twitter4j.Status;
+
+import twitterSearch.TwitterSearch;
+
+public class Driver {
+
+	public static void main(String[] args) {
 		
-		// Insert BPI from yesterday into database.
-		double bpi = CoinDeskAPI.getBPIForYesterday();
-		String sql = String.format("INSERT INTO bitcoin_price_index (price_index, date) VALUES (%s, '%s')", bpi, LocalDate.now());
+		GregorianCalendar date = new GregorianCalendar(2018, 3, 13);
 		
-		database.createStatement().executeUpdate(sql);
-		
-		// Insert sentiments from sample tweets into the database.
-		ArrayList<String> tweetSamples = loadSamples();
-		
-		Sentiment sentimentResult;
-		
-		for(String sample : tweetSamples) 
-		{
-			sentimentResult = TextAnalyzer.analyzeSentiment(sample, SentimentMode.TWEET);
-			
-			sql = String.format("INSERT INTO sentiment (polarity, polarity_confidence, date) VALUES ('%s', %s, '%s')",
-								sentimentResult.getPolarity(), sentimentResult.getPolarityConfidence(), LocalDate.now());
-			
-			database.createStatement().executeUpdate(sql);
+		// Connect to the database
+		Connection database = null;
+		try {
+			database = DriverManager.getConnection("jdbc:mysql://localhost:3306/bitcoin_price_sentiment", 
+										           "root", "root");
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
-	}
-	
-	private static ArrayList<String> loadSamples() throws TextAPIException
-	{
-		ArrayList<String> samples = new ArrayList<String>();
 		
-		samples.add("The last week has shown beyond all doubt that "
-				  + "Bitcoin is anything but a \"safe asset\". It's a highly risky speculative investment. "
-				  + "Can we stop the \"digital gold\" nonsense now, please?");
+		// Insert BPI from selected date into database.
+		double bpi = 0;
+		try {
+			bpi = CoinDeskAPI.getBPIFromDateRange(LocalDate.ofYearDay(date.get(GregorianCalendar.YEAR), 
+																	  date.get(GregorianCalendar.DAY_OF_YEAR)),
+												  LocalDate.ofYearDay(date.get(GregorianCalendar.YEAR), 
+																	  date.get(GregorianCalendar.DAY_OF_YEAR))).get(0);
+		} catch (JSONException | IOException e) {
+			e.printStackTrace();
+		}
 		
-		samples.add("Bitcoin mining is potentially even more wasteful of energy than gold mining");
+	    Date sqlDate = new java.sql.Date(date.getTimeInMillis());
+		String sql = String.format("INSERT INTO bitcoin_price_index (price_index, date) VALUES (%s, '%s')", bpi, sqlDate);
 		
-		samples.add("Winklevii: Bitcoin could be worth 40 times what it is right now");
+		try {
+			database.createStatement().executeUpdate(sql);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
-		samples.add("Cryptocurrency bull run imminent with bitcoin to hit $50,000 in 2018");
+		// Get tweets from that date.
+		List<Status> tweets = TwitterSearch.searchTweetsFromDate("bitcoin", date, 1000);
 		
-		samples.add("Testing");
-		
-		return samples;
+		// Analyze tweets.
+		Sentiment sentimentResult = null;
+		for(Status tweet : tweets) 
+		{
+			try {
+				sentimentResult = TextAnalyzer.analyzeSentiment(tweet.getText(), SentimentMode.TWEET);
+			} catch (TextAPIException e) {
+				try {
+					e.printStackTrace();
+					Thread.sleep(61000);
+					sentimentResult = TextAnalyzer.analyzeSentiment(tweet.getText(), SentimentMode.TWEET);
+				} catch (InterruptedException | TextAPIException e1) {
+					e1.printStackTrace();
+				}
+			}
+						
+			sql = String.format("INSERT INTO sentiment (polarity, polarity_confidence, date) VALUES ('%s', %s, '%s')",
+								sentimentResult.getPolarity(), sentimentResult.getPolarityConfidence(), sqlDate);
+			
+			try {
+				database.createStatement().executeUpdate(sql);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }
